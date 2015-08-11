@@ -73,8 +73,8 @@ public class MainActivity extends AppCompatActivity {
         s.setLayoutParams(m);
         l.addView(s);
 
-        addSensorControl("ayy lmao");
-        addSensorControl("wazzup");
+        addSensorControl("sensor 1");
+        addSensorControl("sensor 2");
 
 
     }
@@ -83,7 +83,8 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected String doInBackground(String... params) {
             try {
-                URL url = new URL("http://192.168.1.1:3000/");
+                URL url = new URL("http://raspberrypi.home:3000/");
+
                 HttpURLConnection h = (HttpURLConnection) url.openConnection();
                 Log.i("info", url.getHost());
                 Log.i("info", String.valueOf(url.getPort()));
