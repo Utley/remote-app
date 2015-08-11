@@ -51,30 +51,9 @@ public class MainActivity extends AppCompatActivity {
         });
         l.addView(button);
 
-        SeekBar s = new SeekBar(this);
-        sensors.add(s);
-        s.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                new sendInfoAsync().execute("default", String.valueOf(progress), "asdf");
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-
-            }
-        });
-        LayoutParams m = new LayoutParams(-1,-2);
-        s.setLayoutParams(m);
-        l.addView(s);
-
         addSensorControl("sensor 1");
         addSensorControl("sensor 2");
+        addSensorControl("sensor 3");
 
 
     }
@@ -91,17 +70,12 @@ public class MainActivity extends AppCompatActivity {
                 h.setDoOutput(true);
                 h.setChunkedStreamingMode(0);
                 h.setRequestMethod("POST");
-                h.setRequestProperty("Content-Type", "application/json");
-                h.setRequestProperty("Accept", "application/json");
+                h.setRequestProperty("Content-Type", "text");
 
                 Permission p = h.getPermission();
-                Log.i("info", "permission: " + p.getName());
                 OutputStream out = h.getOutputStream();
                 BufferedWriter w = new BufferedWriter(new OutputStreamWriter(out,"UTF-8"));
-                JSONObject j = new JSONObject();
-                j.put("sensor", params[0]);
-                j.put("value",params[1]);
-                w.write(j.toString());
+                w.write(params[0]+":"+params[1]);
 
                 w.flush();
                 w.close();
@@ -111,8 +85,6 @@ public class MainActivity extends AppCompatActivity {
             } catch (MalformedURLException e) {
                 e.printStackTrace();
             } catch (IOException e) {
-                e.printStackTrace();
-            } catch (JSONException e) {
                 e.printStackTrace();
             }
             return null;
@@ -150,7 +122,9 @@ public class MainActivity extends AppCompatActivity {
         s.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                new sendInfoAsync().execute( name, String.valueOf(progress), "asdf");
+                if(progress % 5 == 0) {
+                    new sendInfoAsync().execute(name, String.valueOf(progress), "asdf");
+                }
             }
 
             @Override
