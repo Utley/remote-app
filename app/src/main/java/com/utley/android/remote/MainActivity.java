@@ -3,6 +3,7 @@ package com.utley.android.remote;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.ArrayMap;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -29,7 +30,7 @@ import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
 
-    ArrayList<SeekBar> sensors = new ArrayList<>();
+    ArrayMap<String, SeekBar> controls = new ArrayMap<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,21 +42,15 @@ public class MainActivity extends AppCompatActivity {
         LinearLayout l = (LinearLayout) findViewById(R.id.controls);
         l.addView(helloworld);
 
-        Button button = new Button(this);
-        button.setText("test");
-        button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                new sendInfoAsync().execute("a", "b", "c");
-            }
-        });
-        l.addView(button);
+        addControl("Control 1");
+        addControl("Control 2");
+        addControl("Control 3");
 
-        addSensorControl("sensor 1");
-        addSensorControl("sensor 2");
-        addSensorControl("sensor 3");
-
-
+        Preset p = new Preset();
+        p.setControl("Control 1",30f);
+        p.setControl("Control 2",20f);
+        p.setControl("control 3",50f);
+        p.activate();
     }
 
     private class sendInfoAsync extends AsyncTask<String, Void, String> {
@@ -91,6 +86,33 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    //basic class for setting all values at once
+    //e.g. turning lights out
+    //currently untested
+    private class Preset {
+
+        private ArrayMap<String, Float> values;
+        public Preset(){
+            values = new ArrayMap<>();
+        }
+        public void setControl(String name, float val){
+            values.put(name, val);
+        }
+        public void deleteControl(String name){
+            values.remove(name);
+        }
+        public void activate(){
+            for( String val : values.keySet()){
+                if(controls.containsKey(val)){
+                    int progress = Float.floatToIntBits(values.get(val));
+                    controls.get(val).setProgress( progress );
+                }
+
+            }
+        }
+
+    }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -114,7 +136,7 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    private void addSensorControl( final String name ){
+    private void addControl( final String name ){
         SeekBar s = new SeekBar(this);
         LinearLayout l = (LinearLayout) findViewById(R.id.controls);
         LayoutParams lparams = new LayoutParams(-1,-2);
@@ -137,7 +159,7 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
-        sensors.add(s);
+        controls.put(name,s);
         l.addView(s);
 
     }
