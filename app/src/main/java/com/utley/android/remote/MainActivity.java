@@ -1,8 +1,8 @@
 package com.utley.android.remote;
 
 import android.os.AsyncTask;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.util.ArrayMap;
 import android.util.Log;
 import android.view.Menu;
@@ -14,10 +14,6 @@ import android.widget.LinearLayout.LayoutParams;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.BufferedOutputStream;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -26,11 +22,14 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.Permission;
-import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
 
     ArrayMap<String, SeekBar> controls = new ArrayMap<>();
+    String protocol="http";
+    String piName = "raspberrypi.home";
+    String portNumber = "3000";
+    String piUrl = protocol+"://"+piName+":"+portNumber+"/"; //"http://raspberrypi.home:3000/";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,28 +45,38 @@ public class MainActivity extends AppCompatActivity {
         addControl("Control 2");
         addControl("Control 3");
 
-        Preset p = new Preset();
+        final Preset p = new Preset();
         p.setControl("Control 1",30f);
         p.setControl("Control 2",20f);
-        p.setControl("control 3",50f);
+        p.setControl("control 3", 50f);
         p.activate();
+
+        Button b = new Button(this);
+        b.setText("preset 1");
+        b.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                p.activate();
+            }
+        });
+        l.addView(b);
+
     }
 
     private class sendInfoAsync extends AsyncTask<String, Void, String> {
         @Override
         protected String doInBackground(String... params) {
             try {
-                URL url = new URL("http://raspberrypi.home:3000/");
+                URL url = new URL(piUrl);
 
                 HttpURLConnection h = (HttpURLConnection) url.openConnection();
-                Log.i("info", url.getHost());
-                Log.i("info", String.valueOf(url.getPort()));
+//                Log.i("info", url.getHost());
+//                Log.i("info", String.valueOf(url.getPort()));
                 h.setDoOutput(true);
                 h.setChunkedStreamingMode(0);
                 h.setRequestMethod("POST");
                 h.setRequestProperty("Content-Type", "text");
 
-                Permission p = h.getPermission();
                 OutputStream out = h.getOutputStream();
                 BufferedWriter w = new BufferedWriter(new OutputStreamWriter(out,"UTF-8"));
                 w.write(params[0]+":"+params[1]);
@@ -104,13 +113,11 @@ public class MainActivity extends AppCompatActivity {
         public void activate(){
             for( String val : values.keySet()){
                 if(controls.containsKey(val)){
-                    int progress = Float.floatToIntBits(values.get(val));
+                    int progress = Integer.parseInt(values.get(val).toString());
                     controls.get(val).setProgress( progress );
                 }
-
             }
         }
-
     }
 
 
