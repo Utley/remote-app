@@ -1,5 +1,6 @@
 package com.utley.android.remote;
 
+import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -31,6 +32,8 @@ public class MainActivity extends AppCompatActivity {
     String portNumber = "3000";
     String piUrl = protocol+"://"+piName+":"+portNumber+"/"; //"http://raspberrypi.home:3000/";
 
+    LinearLayout l;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -38,7 +41,7 @@ public class MainActivity extends AppCompatActivity {
 
         TextView helloworld = new TextView(this);
         helloworld.setText("hello world");
-        LinearLayout l = (LinearLayout) findViewById(R.id.controls);
+        l = (LinearLayout) findViewById(R.id.controls);
         l.addView(helloworld);
 
         addControl("Control 1");
@@ -61,45 +64,20 @@ public class MainActivity extends AppCompatActivity {
         });
         l.addView(b);
 
-    }
-
-    private class sendInfoAsync extends AsyncTask<String, Void, String> {
-        @Override
-        protected String doInBackground(String... params) {
-            try {
-                URL url = new URL(piUrl);
-
-                HttpURLConnection h = (HttpURLConnection) url.openConnection();
-//                Log.i("info", url.getHost());
-//                Log.i("info", String.valueOf(url.getPort()));
-                h.setDoOutput(true);
-                h.setChunkedStreamingMode(0);
-                h.setRequestMethod("POST");
-                h.setRequestProperty("Content-Type", "text");
-
-                OutputStream out = h.getOutputStream();
-                BufferedWriter w = new BufferedWriter(new OutputStreamWriter(out,"UTF-8"));
-                w.write(params[0]+":"+params[1]);
-
-                w.flush();
-                w.close();
-
-
-                h.connect();
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
+        Button c = (Button) findViewById(R.id.button);
+        c.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                addControl("working, probably");
             }
-            return null;
-        }
+        });
+
     }
 
     //basic class for setting all values at once
     //e.g. turning lights out
     //currently untested
     private class Preset {
-
         private ArrayMap<String, Float> values;
         public Preset(){
             values = new ArrayMap<>();
@@ -113,7 +91,7 @@ public class MainActivity extends AppCompatActivity {
         public void activate(){
             for( String val : values.keySet()){
                 if(controls.containsKey(val)){
-                    int progress = Integer.parseInt(values.get(val).toString());
+                    int progress = values.get(val).intValue();
                     controls.get(val).setProgress( progress );
                 }
             }
@@ -142,32 +120,10 @@ public class MainActivity extends AppCompatActivity {
 
         return super.onOptionsItemSelected(item);
     }
-
     private void addControl( final String name ){
-        SeekBar s = new SeekBar(this);
-        LinearLayout l = (LinearLayout) findViewById(R.id.controls);
-        LayoutParams lparams = new LayoutParams(-1,-2);
-        s.setLayoutParams(lparams);
-        s.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                if(progress % 5 == 0) {
-                    new sendInfoAsync().execute(name, String.valueOf(progress), "asdf");
-                }
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-
-            }
-        });
-        controls.put(name,s);
-        l.addView(s);
+        Control c = new Control(this);
+        c.setName(name);
+        c.addTo(l);
 
     }
 
